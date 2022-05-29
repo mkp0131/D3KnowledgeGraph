@@ -3,10 +3,15 @@ const nodes = neo4jData[0].nodes;
 const links = neo4jData[0].links;
 
 // 그래프 생성
-function initGraph() {
+function initGraph(HTMLContainer) {
+  if (!HTMLContainer) {
+    console.log("# 그래프생성 에러: 엘리먼트가 없습니다.");
+    return;
+  }
+
   // 상수 정의
-  const WIDTH = 600;
-  const HEIGHT = 600;
+  const WIDTH = document.querySelector(HTMLContainer).clientWidth;
+  const HEIGHT = document.querySelector(HTMLContainer).clientHeight;
   const CENTER_X = WIDTH / 2;
   const CENTER_Y = HEIGHT / 2;
 
@@ -17,7 +22,7 @@ function initGraph() {
     .force(
       "link",
       d3
-        .forceLink()
+        .forceLink(links)
         .id(function (d) {
           return d.id;
         })
@@ -38,20 +43,23 @@ function initGraph() {
     simulation.restart();
   });
 
-  // 원본 데이터에 그래프 데이터 추가
-  simulation.nodes(nodes);
-  simulation.force("link").links(links);
+  const div = d3
+    .select(HTMLContainer)
+    .append("div")
+    .attr("class", "graph-conatainer");
 
   // 그래프 svg (컨테이너) 생성
-  const svg = d3
-    .select("body")
+  const svg = div
     .append("svg")
     .attr("width", WIDTH)
     .attr("height", HEIGHT)
     .attr("class", "graph");
 
+  // 그래프요소 그룹으로 묶음
+  const svg_inner = svg.append("g");
+
   // 라인 추가
-  const lines = svg
+  const lines = svg_inner
     .selectAll("line") //
     .data(links)
     .enter()
@@ -59,7 +67,7 @@ function initGraph() {
     .attr("stroke", "#dbdbdb");
 
   // 노드 추가
-  const circles = svg
+  const circles = svg_inner
     .selectAll("circle") //
     .data(nodes)
     .enter()
@@ -72,7 +80,7 @@ function initGraph() {
     .call(dragInteraction); // 드레그 이벤트 추가
 
   // 텍스트 추가
-  const text = svg
+  const text = svg_inner
     .selectAll("text") //
     .data(nodes)
     .enter()
@@ -83,8 +91,17 @@ function initGraph() {
     .text(function (node) {
       return node.id;
     });
-  console.log(nodes);
-  console.log(links);
+
+  // 줌 이벤트 추가
+  var zoom_handler = d3.zoom().on("zoom", zoom_actions);
+
+  // 줌 이벤트
+  function zoom_actions() {
+    svg_inner.attr("transform", d3.event.transform);
+  }
+
+  // 줌 이벤트를 차트에 추가
+  zoom_handler(svg);
 
   // 마지막에 실행되는 콜백함수
   simulation.on("tick", function () {
@@ -120,12 +137,4 @@ function initGraph() {
   });
 }
 
-initGraph();
-
-// ajax 로 데이터 불러오기
-// $.ajax({
-//   url: "./data/neo4jData.json",
-//   success: function (data) {
-//     initGraph(data.results);
-//   },
-// });
+initGraph("#graph1");

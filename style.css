@@ -6,7 +6,21 @@ html, body {
   box-sizing: border-box;
 }
 
-.graph {
+/* .graph-conatainer {
+  border: 1px solid #000;
+} */
+
+.kl-graph {
   border: 1px solid #000;
   overflow: hidden;
+  position: relative;
+  padding-bottom: 56.25%;
+}
+
+.kl-graph .graph-conatainer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
 }
